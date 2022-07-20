@@ -1,3 +1,4 @@
+import asyncio
 import socket
 import time
 import sys
@@ -15,35 +16,24 @@ bufferSize          = 1024
 
 file_name = sys.argv[1]
 
-
-
- 
-
 # Create a UDP socket at client side
 
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
  
+# Open and read the file content
+with open(file_name, "r") as file:
+    fileContent = file.read()
+    data = fileContent.encode()     # encode data
 
-# Send to server using created UDP socket
+    # Send to server using created UDP socket
+    UDPClientSocket.sendto(data, serverAddressPort)
+    print ("Sending: " + fileContent)
 
-UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-print ("Sending: " + msgFromClient)
 
+
+# Receive server response and print
 msgFromServer = UDPClientSocket.recvfrom(bufferSize)
 msg = "Message from Server: " + msgFromServer[0].decode()
 
 print(msg)
-
-# f = open(file_name, "r")
-# data = f.read(bufferSize)
-# data.encode(encoding='utf-8')   # Encode data
-# while(data):
-#     if (UDPClientSocket.sendto(data, (serverAddressPort))):
-#         data = f.read(bufferSize)
-#         time.sleep(0.02) # This gives the receiver time to save
-
-
-# UDPClientSocket.close()
-# f.close()
-
