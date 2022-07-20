@@ -5,7 +5,7 @@ import sys
 
  
 
-msgFromClient       = "Sample Message, Hello everyone!"
+msgFromClient       = "I am The Bad Batch!"
 
 bytesToSend         = str.encode(msgFromClient)
 
@@ -27,19 +27,23 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # Send to server using created UDP socket
 
-UDPClientSocket.sendto(file_name, serverAddressPort)
-print ("Sending %s ...", file_name)
+UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+print ("Sending: " + msgFromClient)
 
- 
+msgFromServer = UDPClientSocket.recvfrom(bufferSize)
+msg = "Message from Server: " + msgFromServer[0].decode()
 
-f = open(file_name, "r")
-data = f.read(bufferSize)
-while(data):
-    if (UDPClientSocket.sendto(data, (serverAddressPort))):
-        data = f.read(bufferSize)
-        time.sleep(0.02) # This gives the receiver time to save
+print(msg)
+
+# f = open(file_name, "r")
+# data = f.read(bufferSize)
+# data.encode(encoding='utf-8')   # Encode data
+# while(data):
+#     if (UDPClientSocket.sendto(data, (serverAddressPort))):
+#         data = f.read(bufferSize)
+#         time.sleep(0.02) # This gives the receiver time to save
 
 
-UDPClientSocket.close()
-f.close()
+# UDPClientSocket.close()
+# f.close()
 
