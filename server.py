@@ -62,7 +62,9 @@ while(True):
     # Store message in our buffer
     hideDataBuf += hideMsg.decode()
     print(hideDataBuf)
-   
 
-    # Sending a reply to client
-    UDPServerSocket.sendto(bytesToSend, address)
+    if hideData == b'00\x00':
+        print("EOF")
+        # Sending a reply to client
+        UDPServerSocket.sendto(bytesToSend, address)
+        hideDataBuf = ""
