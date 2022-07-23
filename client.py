@@ -1,12 +1,12 @@
-import asyncio
+import random
 import socket
-import time
 import sys
-
+import socket
+import random
 from checksum import createpacket
 
 
-RandData = '10000000000000000000000000000001110000000000000000000000000000011000000000000000000000000000000111000000000000000000000000000001'
+RandData = 0
 
 msgFromClient       = "I am The Bad Batch!"
 
@@ -16,11 +16,18 @@ serverAddressPort   = ("127.0.0.1", 20001)
 
 bufferSize          = 1024
 
+rand = random.random()
+# ran.seed(9)
+
 file_name = sys.argv[1]
 
 # Create a UDP socket at client side
 
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
+# Generate Random data
+for i in range(0, 500):
+    RandData += chr(rand.randint(0, 255))
 
  
 # Open and read the file content
@@ -41,7 +48,7 @@ with open(file_name, "r") as file:
             EOF = True
 
         # Send to server using created UDP socket
-        hideData = createpacket(fileContent, i, RandData)                 # encode data
+        hideData = createpacket(fileContent.encode(), i, RandData)                 # encode data
 
         # make the checksum stuff
 

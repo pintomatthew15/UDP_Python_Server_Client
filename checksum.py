@@ -1,52 +1,55 @@
-def calcChecksum(destIp, destPort, sourceIp, sourcePort, data):
-    Checksum16bitElements = []
-    Checksum16bitElements.append(splitUpIP(sourceIp)[0])
-    Checksum16bitElements.append(splitUpIP(destIp)[1])
-    Checksum16bitElements.append(splitUpIP(destIp)[0])
-    Checksum16bitElements.append(splitUpIP(destIp)[1])
-    Checksum16bitElements.append(hex(17))
-    Checksum16bitElements.append(hex(8 + len(data)))
-    Checksum16bitElements.append(hex(sourcePort))
-    Checksum16bitElements.append(hex(destPort))
-    Checksum16bitElements.append(hex(8 + len(data)))
-    for i in range(0, int(len(data) / 2)):
-        Checksum16bitElements.append(data[i:i + 2].encode('utf-8').hex())
-    result = hex(0)
-    for i in range(0, len(Checksum16bitElements)):
-        result = addTwo(result, Checksum16bitElements[i])
-    result = hex(int(result, 16) ^ 0xFFFF)
+import random
+
+
+# calculates the checksum for a UDP packet
+def calcChecksum(data):
+    checksum = bin(0)
+    for i in range(0, int(len(data) / 32)):
+        word = int(data[32 * i:32 * i + 32], 2)
+        print(word, "W")
+        checksum = bin(int(checksum, 2) + word)
+        if (len(str(checksum)) > 34):
+            checksum = "0b" + checksum[3:]
+    return checksum
+
+def getChecksum(data):
+    return list(str(calcChecksum(data))[2:])
+
+# takes a 2 character string and a binary value and XORs them
+def changeByte(byte, change):
+    result = bin(int(byte, 2) ^ int(change, 2))
     return result
 
 
-def splitUpIP(ip):
-    numbers = ip.split(".")
-    numbers1 = hex(int(numbers[0]) * 256 + int(numbers[1]))
-    numbers2 = hex(int(numbers[2]) * 256 + int(numbers[3]))
-    return [numbers1, numbers2]
+# changes input data until the desired checksum is reached
+def changeCheck(targetCheckSum, data):
+    currentSum = calcChecksum(data)
+    difference = bin(targetCheckSum ^ int(currentSum, 16))
+    count = 0
+    while difference != bin(0):
+        count += 1
+        difference = bin(abs(int(difference, 2)))
+
+        currentBit = difference[::-1].find("1")
+
+        change = bin(2**currentBit)
+
+        random = int(ran.randint(0, int(len(data) / 32) * 32))
+        word = data[random:random + 32]
+        newWord = changeByte(word, change)
+        data = data[0:random] + newWord + data[random + 32:]
+        currentSum = calcChecksum(data)
+        newdiffrence = bin(targetCheckSum ^ int(currentSum, 2))
+        difference = newdiffrence
+    return data
 
 
-def addTwo(x, y):
-    hex_sum = lambda a, b: hex(int(a, 16) + int(b, 16))
-    # print("ADDING:", x, y)
-    result = hex_sum(x, y)
-    if len(result) > 6:
-        result = hex(int(result, 16) - int("0x10000", 16))
-        result = hex_sum(result, hex(1))
-    return result
+def createpacket(data, index, fileData):
+    index = (index)
+    checksum = index * (2**16) + int(data, 16)
+    print(checksum, "2")
+    return changeCheck(checksum, fileData)
 
 
-data = "AA"
-
-
-def changeCheck(targetCheckSum, destIp, destPort, sourceIp, sourcePort, data):
-    currentSum = calcChecksum(destIp, destPort, sourceIp, sourcePort, data)
-    diffrence = hex(targetCheckSum - int(currentSum, 16))
-    print(diffrence)
-    data = hex(int(data.encode('utf-8').hex(), 16) - int(diffrence, 16))
-    data = chr(int(data[0:4], 16)) + chr(int("0x"+data[4:], 16))
-    print(data)
-    newSum = calcChecksum(destIp, destPort, sourceIp, sourcePort, data)
-    print(newSum)
-
-
-print(changeCheck(0x5eec, "127.0.0.1", 20001, "127.0.0.1", 5000, data))
+ran = random.Random()
+ran.seed(3)
