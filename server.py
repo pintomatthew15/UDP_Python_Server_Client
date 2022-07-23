@@ -1,70 +1,58 @@
+# This is server code
+import base64
+import time
+
+import cv2
+import numpy as np
 import socket
-import select
 
 from checksum import getChecksum
 
- 
+BUFF_SIZE = 65536
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
+host_name = socket.gethostname()
+host_ip = "127.0.0.1"
+port = 9999
+message = b'0'
 
-localIP= "127.0.0.1"
+hideDataBuf = {}
 
-localPort= 20001
+client_socket.sendto(message, (host_ip, port))
+while True:
+    packet, _ = client_socket.recvfrom(BUFF_SIZE)
+    try:
+        data = base64.b64decode(packet + b'=' * (3 - len(packet) % 4), ' /')
+        npdata = np.fromstring(data, dtype=np.uint8)
+        frame = cv2.imdecode(npdata, 1)
+        cv2.imshow("RECEIVING VIDEO", frame)
+        key = cv2.waitKey(1) & 0xFF
 
-bufferSize=1024
+    except:
+        pass
 
-timeout= 3
+    hiddenData = getChecksum(packet.hex())  # Recover the hidden data
+    hiddenData = ''.join(hiddenData)
+    hideSeq = hiddenData[:16]
+    hideMsg = hiddenData[16:]
+    binary_int = int(hideMsg, 2)
+    byte_number = (binary_int.bit_length() + 7) // 8
+    binary_array = binary_int.to_bytes(byte_number, "big")
+    ascii_text = binary_array.decode()
+    hideDataBuf[int(hideSeq, 2)] = ascii_text
+    print("Packet Recived", ascii_text)
 
-hideDataBuf = ""
-
- 
-
-msgFromServer= "Hello The Bad Batch"
-
-bytesToSend= str.encode(msgFromServer)
-
- 
-
-# Create a datagram socket
-
-UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
- 
-
-# Bind to address and ip
-
-UDPServerSocket.bind((localIP, localPort))
-
- 
-
-print("UDP server up and listening")
-
- 
-
-# Listen for incoming datagrams
-while(True):
-
-
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-
-    message = bytesAddressPair[0].decode()
-
-    address = bytesAddressPair[1]
-
-    # clientMsg = "Message from Client: " + message
-    # clientIP  = "Client IP Address: {}".format(address)
-    
-    hideData = getChecksum(message)    # Recover the hided data
-    # print(hideData)
-    hideSequ = hideData[:2]             # Recover the hided sequence
-    # print(hideSequ)
-    hideMsg = hideData[2:]              # Revocer the hided message
-    # print(hideMsg)
-
-    # Store message in our buffer
-    hideDataBuf += hideMsg.decode()
-    print(hideDataBuf)
-
-    if hideData == b'00\x00':
+    if ascii_text == "##":
         print("EOF")
-        # Sending a reply to client
-        UDPServerSocket.sendto(bytesToSend, address)
-        hideDataBuf = ""
+        f = open("recivedMessage.txt", "w")
+        for i in range(0, len(hideDataBuf)):
+            try:
+                f.write(hideDataBuf[i])
+            except:
+                print("index", i, "lost")
+
+        f.close()
+
+        # open and read the file after the appending:
+        f = open("recivedMessage.txt", "r")
+        print(f.read())

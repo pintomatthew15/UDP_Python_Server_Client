@@ -1,66 +1,64 @@
-import random
+import base64
+import time
+
+import cv2
+import imutils
 import socket
-import sys
-import socket
-import random
-from checksum import createpacket
 
+from checksum import getPacket
 
-RandData = ""
+BUFF_SIZE = 65536
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
+host_name = socket.gethostname()
+host_ip = "127.0.0.1"  # socket.gethostbyname(host_name)
+port = 9999
+socket_address = (host_ip, port)
+server_socket.bind(socket_address)
+file_name = "message.txt"
+fileBuffer = []
 
-msgFromClient       = "I am The Bad Batch!"
-
-bytesToSend         = str.encode(msgFromClient)
-
-serverAddressPort   = ("127.0.0.1", 20001)
-
-bufferSize          = 1024
-
-random.seed(9)
-
-file_name = sys.argv[1]
-
-# Create a UDP socket at client side
-
-UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
-# Generate Random data
-for i in range(0, 500):
-    RandData += chr(random.randint(0, 255))
-
- 
-# Open and read the file content
 with open(file_name, "r") as file:
     EOF = False
-    i = 1
     while EOF == False:
+
         fileContent = file.read(2)
 
         if len(fileContent) != 0:
 
             if len(fileContent) == 1:
                 fileContent += " "
-                
+
         else:
-            fileContent += "\0"
-            i = 0
+            fileContent += "##"
             EOF = True
 
-        # Send to server using created UDP socket
-        hideData = createpacket(fileContent.encode(), i, RandData)                 # encode data
+        fileBuffer.append(fileContent)
 
-        # make the checksum stuff
+vid = cv2.VideoCapture(0)  # replace 'rocket.mp4' with 0 for webcam
+fps, st, frames_to_count, cnt = (0, 0, 20, 0)
 
-        # Send the data
-        UDPClientSocket.sendto(hideData, serverAddressPort)
-        print ("Sending: " + str(hideData))
+while True:
+    msg, client_addr = server_socket.recvfrom(BUFF_SIZE)
+    print('GOT connection from ', client_addr)
+    WIDTH = 400
+    count = 0
+    while (vid.isOpened()):
+        _, frame = vid.read()
+        frame = imutils.resize(frame, width=WIDTH)
+        encoded, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        message = base64.b64encode(buffer)
 
-        i += 1
+        if count > len(fileBuffer) - 1:
+            input = hex(0)
+        else:
+            input = fileBuffer[count]
+        hideData = getPacket(input.encode().hex(), count, message.hex())  # encode data
+
+        sendData = bytes.fromhex(hideData)
 
 
+        server_socket.sendto(sendData, client_addr)
 
-# Receive server response and print
-msgFromServer = UDPClientSocket.recvfrom(bufferSize)
-msg = "Message from Server: " + msgFromServer[0].decode()
 
-print(msg)
+        count += 1

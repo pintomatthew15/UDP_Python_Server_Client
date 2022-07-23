@@ -1,19 +1,22 @@
 import random
 
-
+safeArea = []
 # calculates the checksum for a UDP packet
 def calcChecksum(data):
     checksum = bin(0)
     for i in range(0, int(len(data) / 32)):
         word = int(data[32 * i:32 * i + 32], 2)
-        print(word, "W")
         checksum = bin(int(checksum, 2) + word)
-        if (len(str(checksum)) > 34):
+        if len(str(checksum)) > 34:
             checksum = "0b" + checksum[3:]
     return checksum
 
+
+# method for calling the checksum method
 def getChecksum(data):
+    data = bin(int(data, 16))
     return list(str(calcChecksum(data))[2:])
+
 
 # takes a 2 character string and a binary value and XORs them
 def changeByte(byte, change):
@@ -23,32 +26,34 @@ def changeByte(byte, change):
 
 # changes input data until the desired checksum is reached
 def changeCheck(targetCheckSum, data):
-    currentSum = calcChecksum(data)
-    difference = bin(targetCheckSum ^ int(currentSum, 16))
-    count = 0
+    currentChecksum = calcChecksum(data)
+    difference = bin(targetCheckSum ^ int(currentChecksum, 2))
     while difference != bin(0):
-        count += 1
         difference = bin(abs(int(difference, 2)))
-
         currentBit = difference[::-1].find("1")
-
-        change = bin(2**currentBit)
-
-        random = int(ran.randint(0, int(len(data) / 32) * 32))
-        word = data[random:random + 32]
+        change = bin(2 ** currentBit)
+        rand = (ran.randint(3000, 3005)) * 32
+        word = data[rand:rand + 32]
         newWord = changeByte(word, change)
-        data = data[0:random] + newWord + data[random + 32:]
-        currentSum = calcChecksum(data)
-        newdiffrence = bin(targetCheckSum ^ int(currentSum, 2))
-        difference = newdiffrence
+        newWord = "0" * (34 - len(newWord)) + newWord[2:]
+        data = data[0:rand] + newWord + data[rand + 32:]
+        currentChecksum = calcChecksum(data)
+        difference = bin(targetCheckSum ^ int(currentChecksum, 2))
     return data
 
 
-def createpacket(data, index, fileData):
-    index = (index)
-    checksum = index * (2**16) + int(data, 16)
-    print(checksum, "2")
-    return changeCheck(checksum, fileData)
+# takes in hidden data, udp data and index
+def createpacket(hiddenData, index, data):
+    hiddenData = bin(int(hiddenData, 16))
+    data = bin(int(data, 16))
+    checksum = index * (2 ** 16) + int(hiddenData, 2)
+    print(hex(checksum), "2")
+    return changeCheck(checksum, data)
+
+
+# function for calling createPacket externally
+def getPacket(hiddenData, index, data):
+    return hex(int(createpacket(hiddenData, index, data), 2))[2:]
 
 
 ran = random.Random()
