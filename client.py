@@ -6,7 +6,7 @@ import random
 from checksum import createpacket
 
 
-RandData = 0
+RandData = ""
 
 msgFromClient       = "I am The Bad Batch!"
 
@@ -16,8 +16,7 @@ serverAddressPort   = ("127.0.0.1", 20001)
 
 bufferSize          = 1024
 
-rand = random.random()
-# ran.seed(9)
+random.seed(9)
 
 file_name = sys.argv[1]
 
@@ -27,7 +26,7 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # Generate Random data
 for i in range(0, 500):
-    RandData += chr(rand.randint(0, 255))
+    RandData += chr(random.randint(0, 255))
 
  
 # Open and read the file content
