@@ -23,12 +23,31 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
  
 # Open and read the file content
 with open(file_name, "r") as file:
-    fileContent = file.read()
-    data = fileContent.encode()     # encode data
+    EOF = False
+    i = 1
+    while EOF == False:
+        fileContent = f"{i:02}" + file.read(2)
+        hideData = f"{i:02}"
 
-    # Send to server using created UDP socket
-    UDPClientSocket.sendto(data, serverAddressPort)
-    print ("Sending: " + fileContent)
+        if len(fileContent) != 2:
+
+            if len(fileContent) == 3:
+                fileContent += " "
+                
+        else:
+            fileContent += "\0"
+            EOF = True
+
+        # Send to server using created UDP socket
+        hideData = fileContent.encode()                 # encode data
+
+        # make the checksum stuff
+
+        # Send the data
+        UDPClientSocket.sendto(hideData, serverAddressPort)
+        print ("Sending: " + fileContent)
+
+        i += 1
 
 
 
