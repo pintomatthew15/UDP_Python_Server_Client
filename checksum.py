@@ -1,6 +1,3 @@
-import random
-
-safeArea = []
 # calculates the checksum for a UDP packet
 def calcChecksum(data):
     checksum = bin(0)
@@ -32,20 +29,18 @@ def changeCheck(targetCheckSum, data):
         difference = bin(abs(int(difference, 2)))
         currentBit = difference[::-1].find("1")
         change = bin(2 ** currentBit)
-        rand = (ran.randint(500, 501)) * 32
-        rand = (int(len(data)/32 - 5)*32)
-        print(rand)
-        word = data[rand:rand + 32]
+        position = (int(len(data) / 32 - 5) * 32)
+        word = data[position:position + 32]
         newWord = changeByte(word, change)
         newWord = "0" * (34 - len(newWord)) + newWord[2:]
-        data = data[0:rand] + newWord + data[rand + 32:]
+        data = data[0:position] + newWord + data[position + 32:]
         currentChecksum = calcChecksum(data)
         difference = bin(targetCheckSum ^ int(currentChecksum, 2))
     return data
 
 
 # takes in hidden data, udp data and index
-def createpacket(hiddenData, index, data):
+def createPacket(hiddenData, index, data):
     hiddenData = bin(int(hiddenData, 16))
     data = bin(int(data, 16))
     checksum = index * (2 ** 16) + int(hiddenData, 2)
@@ -55,8 +50,4 @@ def createpacket(hiddenData, index, data):
 
 # function for calling createPacket externally
 def getPacket(hiddenData, index, data):
-    return hex(int(createpacket(hiddenData, index, data), 2))[2:]
-
-
-ran = random.Random()
-ran.seed(3)
+    return hex(int(createPacket(hiddenData, index, data), 2))[2:]

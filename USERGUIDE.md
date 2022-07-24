@@ -20,6 +20,8 @@ By Annan McGlade, Sarah Chalokh, and Matthew Pinto
 2. Run the client server first with the command: ```python3 client.py```
 3. Run the server next with the command: ```python3 server.py```
 
+## Choice of Data Stream
+replacing ```"ZoomData.mp4"``` with ```0``` should change the source used to the webcam 
 
 ### About Our Solution
 Our solution takes traffic generated from an infected UDP application, like Zoom, and modifies the UDP packet's data section to contain our hidden data. The packets travel over the network like normal network traffic and the data is saved in the server. Therefore, our covert message appears like any other data over the server and remains undetected. 
