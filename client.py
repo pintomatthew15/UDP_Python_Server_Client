@@ -33,7 +33,10 @@ with open(file_name, "r") as file:
 
         fileBuffer.append(fileContent)
 
-vid = cv2.VideoCapture(0)  # replace 'rocket.mp4' with 0 for webcam
+# vid = cv2.VideoCapture(0)  # replace 'rocket.mp4' with 0 for webcam
+
+vid = cv2.VideoCapture("ZoomData.mp4")  # replace 'rocket.mp4' with 0 for webcam
+
 fps, st, frames_to_count, cnt = (0, 0, 20, 0)
 
 while True:
