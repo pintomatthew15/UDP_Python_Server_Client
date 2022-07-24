@@ -7,14 +7,12 @@ By Annan McGlade, Sarah Chalokh, and Matthew Pinto
 1. Python v 3.8.10
 2. Python Socket Library v 3.10.5
 3. Python cv2 Library v 4.6.0.66
-4. Python imutils Library v 0.5.4
 
 
 ### Install
 1. Clone this repository with the command  ```git clone https://github.com/pintomatthew15/UDP_Python_Server_Client.git```
-2. install dependencies like the ```cv2``` or ```imutils``` library with the following commands:
+2. install dependency ```cv2``` library with the following commands:
 - ```pip install opencv-python```
-- ```pip install imutils```
 
 
 ## Running the Server and Client
