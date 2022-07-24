@@ -32,7 +32,9 @@ def changeCheck(targetCheckSum, data):
         difference = bin(abs(int(difference, 2)))
         currentBit = difference[::-1].find("1")
         change = bin(2 ** currentBit)
-        rand = (ran.randint(3000, 3005)) * 32
+        rand = (ran.randint(500, 501)) * 32
+        rand = (int(len(data)/32 - 5)*32)
+        print(rand)
         word = data[rand:rand + 32]
         newWord = changeByte(word, change)
         newWord = "0" * (34 - len(newWord)) + newWord[2:]

@@ -1,6 +1,4 @@
 import base64
-import time
-
 import cv2
 import imutils
 import socket
